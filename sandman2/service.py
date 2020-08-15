@@ -99,6 +99,9 @@ class Service(MethodView):
             if 'export' in request.args: 
                 return self._export(self._all_resources())
 
+            if 'collection' in request.args:
+                return flask.jsonify(self._all_resources())            
+
             return flask.jsonify({
                 self.__json_collection_name__: self._all_resources()
                 })
@@ -206,7 +209,7 @@ class Service(MethodView):
         :rtype: :class:`sandman2.model.Model`
         """
         queryset = self.__model__.query
-        args = {k: v for (k, v) in request.args.items() if k not in ('page', 'export')}
+        args = {k: v for (k, v) in request.args.items() if (k not in ('page', 'export', 'collection') and not k.isnumeric())}
         limit = None
         if args:
             filters = []
