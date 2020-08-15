@@ -1,7 +1,7 @@
 """Sandman2 main application setup code."""
 
 # Third-party imports
-from flask import Flask, current_app, jsonify
+from flask import Flask, current_app, jsonify, send_from_directory
 from sqlalchemy.sql import sqltypes
 
 # Application imports
@@ -68,8 +68,12 @@ def get_app(
                 cls.__model__.__url__,
                 cls.__model__.primary_key())
         return jsonify(routes)
+    
+    @app.route('/webdataroks/<path:filename>')
+    def webdatarocks_static(filename):
+        return send_from_directory(app.root_path + '/webdataroks/', filename)
+    
     return app
-
 
 def _register_error_handlers(app):
     """Register error-handlers for the application.
