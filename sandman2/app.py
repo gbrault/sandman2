@@ -68,7 +68,7 @@ def get_app(
                 cls.__model__.__url__,
                 cls.__model__.primary_key())
         return jsonify(routes)
-    
+
     @app.route('/webdataroks/<path:filename>')
     def webdatarocks_static(filename):
         return send_from_directory(app.root_path + '/webdataroks/', filename)
