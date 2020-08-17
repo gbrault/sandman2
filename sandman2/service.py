@@ -223,7 +223,11 @@ class Service(MethodView):
                 elif key == 'limit':
                     limit = int(value)
                 elif hasattr(self.__model__, key):
-                    filters.append(getattr(self.__model__, key) == value)
+                    if "|" in value:
+                        values = value.split("|")
+                        filters.append(getattr(self.__model__, key).in_(values))
+                    else:
+                        filters.append(getattr(self.__model__, key) == value)
                 else:
                     raise BadRequestException('Invalid field [{}]'.format(key))
             queryset = queryset.filter(*filters).order_by(*order)
