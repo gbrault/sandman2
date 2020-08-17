@@ -1,8 +1,10 @@
 """Sandman2 main application setup code."""
 
 # Third-party imports
+import logging
 from flask import Flask, current_app, jsonify, send_from_directory
 from sqlalchemy.sql import sqltypes
+
 
 # Application imports
 from sandman2.exception import (
@@ -45,6 +47,7 @@ def get_app(
     :param str schema: Use the specified named schema instead of the default
     """
     app = Flask('sandman2')
+    logging.basicConfig(level=logging.DEBUG)
     app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
     app.config['SANDMAN2_READ_ONLY'] = read_only
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
