@@ -1,6 +1,8 @@
 """Automatically generated REST API services from SQLAlchemy
 ORM models or a database introspection."""
 
+import sys
+
 # Third-party imports
 from flask import request, make_response
 import flask
@@ -215,7 +217,8 @@ class Service(MethodView):
             filters = []
             order = []
             for key, value in args.items():
-                flask.current_app.logger.debug(value)
+                #flask.current_app.logger.debug(value)
+                print(f"{key}={value}", file=sys.stdout,flush=True)
                 if value.startswith('%'):
                     filters.append(getattr(self.__model__, key).like(str(value), escape='/'))
                 elif key == 'sort':
