@@ -218,7 +218,7 @@ class Service(MethodView):
             order = []
             for key, value in args.items():
                 #flask.current_app.logger.debug(value)
-                print(f"{key}={value}", file=sys.stdout,flush=True)
+                print(f"{key}={value}", file=sys.stdout, pipflush=True)
                 if value.startswith('%'):
                     filters.append(getattr(self.__model__, key).like(str(value), escape='/'))
                 elif key == 'sort':
