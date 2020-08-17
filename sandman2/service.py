@@ -215,6 +215,7 @@ class Service(MethodView):
             filters = []
             order = []
             for key, value in args.items():
+                print(value)
                 if value.startswith('%'):
                     filters.append(getattr(self.__model__, key).like(str(value), escape='/'))
                 elif key == 'sort':
