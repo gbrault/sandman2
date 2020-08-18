@@ -141,4 +141,4 @@ class Model(object):
         return description
 
 DeclarativeModel = declarative_base(cls=(db.Model, Model))
-AutomapModel = automap_base(DeclarativeModel)
+AutomapModel = automap_base(DeclarativeModel, reflect=True)
