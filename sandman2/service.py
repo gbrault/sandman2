@@ -204,6 +204,52 @@ class Service(MethodView):
         if not resource:
             raise NotFoundException()
         return resource
+    
+    def prepareDate(self, key, value, backend, filters):
+        """Set Date Filter
+        """
+        values = value.split(",")
+        if len(values) > 2:
+            if backend == 'sqlite':
+                ftext = f"date({key}) between date('{values[1]}') and date('{values[2]}')"
+                filters.append(text(ftext))
+            elif backend == 'mysql':
+                ftext = f"date({key}) between date('{values[1]}') and date('{values[2]}')"
+                filters.append(text(ftext))
+            else:
+                raise BadRequestException('Invalid backend for Date processing')
+        else:
+            if backend == 'sqlite':
+                ftext = f"date({key}) = date('{values[1]}')"
+                filters.append(text(ftext))
+            elif backend == 'mysql':
+                ftext = f"date({key}) = date('{values[1]}')"
+                filters.append(text(ftext))
+            else:
+                raise BadRequestException('Invalid backend for Date processing')
+
+    def prepareYear(self, key, value, backend, filters):
+        """Set year Filter
+        """
+        values = value.split(",")
+        if len(values) > 2:
+            if backend == 'sqlite':
+                ftext = f"strftime('%Y',{key}) between '{values[1]}' and '{values[2]}'"
+                filters.append(text(ftext))
+            elif backend == 'mysql':
+                ftext = f"year(date({key})) between {values[1]} and {values[2]}"
+                filters.append(text(ftext))
+            else:
+                raise BadRequestException('Invalid backend for Year processing')
+        else:
+            if backend == 'sqlite':
+                ftext = f"strftime('%Y',{key}) = '{values[1]}'"
+                filters.append(text(ftext))
+            elif backend == 'mysql':
+                ftext = f"year(date({key})) = {values[1]})"
+                filters.append(text(ftext))
+            else:
+                raise BadRequestException('Invalid backend for Year processing')
 
     def _all_resources(self):
         """Return the complete collection of resources as a list of
@@ -218,7 +264,9 @@ class Service(MethodView):
         elif 'mysql' in db.engine.name:
             backend = 'mysql'
         queryset = self.__model__.query
-        args = {k: v for (k, v) in request.args.items() if (k not in ('page', 'export', 'collection') and not k.isnumeric())}
+        args = {k: v for (k, v) in request.args.items() 
+                if (k not in ('page', 'export', 'collection') 
+                    and not k.isnumeric())}
         limit = None
         if args:
             filters = []
@@ -227,36 +275,20 @@ class Service(MethodView):
                 #flask.current_app.logger.debug(value)
                 print(f"{key}={value}", file=sys.stdout, flush=True)
                 if value.startswith('%'):
-                    filters.append(getattr(self.__model__, key).like(str(value), escape='/'))
+                    filters.append(
+                        getattr(self.__model__, key).like(str(value), 
+                                                          escape='/'))
                 elif key == 'sort':
                     direction = desc if value.startswith('-') else asc
-                    order.append(direction(getattr(self.__model__, value.lstrip('-'))))
+                    order.append(direction(getattr(self.__model__, 
+                                                   value.lstrip('-'))))
                 elif key == 'limit':
                     limit = int(value)
                 elif hasattr(self.__model__, key):
                     if value.startswith("DATE"):
-                        values = value.split(",")
-                        if values[1] != "YEAR":
-                            if len(values) > 2:
-                                if backend == 'sqlite':
-                                    ftext = f"date({key}) between date('{values[1]}') and date('{values[2]}')"
-                                    filters.append(text(ftext))
-                                elif backend == 'mysql':
-                                    ftext = f"date({key}) between date('{values[1]}') and date('{values[2]}')"
-                                    filters.append(text(ftext))
-                                else:
-                                    raise BadRequestException('Invalid backend for Date processing')
-                            else:
-                                if backend == 'sqlite':
-                                    ftext = f"date({key}) = date('{values[1]}')"
-                                    filters.append(text(ftext))
-                                elif backend == 'mysql':
-                                    ftext = f"date({key}) = date('{values[1]}')"
-                                    filters.append(text(ftext))
-                                else:
-                                    raise BadRequestException('Invalid backend for Date processing')
-                        else: # values[1] == 'YEAR'
-                            pass
+                        self.prepareDate(key, value, backend, filters)
+                    elif value.startswith("YEAR"):
+                        self.prepareYear(key, value, backend, filters)
                     elif "|" in value:
                         values = value.split("|")
                         filters.append(getattr(self.__model__, key).in_(values))
@@ -266,7 +298,8 @@ class Service(MethodView):
                     raise BadRequestException('Invalid field [{}]'.format(key))
             queryset = queryset.filter(*filters).order_by(*order)
         if 'page' in request.args:
-            resources = queryset.paginate(page=int(request.args['page']), per_page=limit).items
+            resources = queryset.paginate(page=int(request.args['page']), 
+                                          per_page=limit).items
         else:
             queryset = queryset.limit(limit)
             resources = queryset.all()
