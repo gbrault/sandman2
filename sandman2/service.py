@@ -8,6 +8,7 @@ from flask import request, make_response
 import flask
 from flask.views import MethodView
 from sqlalchemy import asc, desc
+from sqlalchemy.sql import func, text
 
 # Application imports
 from sandman2.exception import NotFoundException, BadRequestException
@@ -210,6 +211,11 @@ class Service(MethodView):
 
         :rtype: :class:`sandman2.model.Model`
         """
+        backend = ""
+        if 'sqlite' in db.engine.name:
+            backend = 'sqlite'
+        elif 'mysql' in db.engine.name:
+            backend = 'mysql'
         queryset = self.__model__.query
         args = {k: v for (k, v) in request.args.items() if (k not in ('page', 'export', 'collection') and not k.isnumeric())}
         limit = None
@@ -227,7 +233,30 @@ class Service(MethodView):
                 elif key == 'limit':
                     limit = int(value)
                 elif hasattr(self.__model__, key):
-                    if "|" in value:
+                    if value.startsWith("DATE"):
+                        values = value.split(",")
+                        if values[1] != "YEAR":
+                            if len(values) > 2:
+                                if backend == 'sqlite':
+                                    ftext = f"date(key) between date({values[1]}) and date({values[2]})"
+                                    filters.append(text(ftext))
+                                elif backend == 'mysql':
+                                    ftext = f"date(key) between date({values[1]}) and date({values[2]})"
+                                    filters.append(text(ftext))
+                                else:
+                                    raise BadRequestException('Invalid backend for Date processing')
+                            else:
+                                if backend == 'sqlite':
+                                    ftext = f"date(key) = date({values[1]})"
+                                    filters.append(text(ftext))
+                                elif backend == 'mysql':
+                                    ftext = f"date(key) = date({values[1]})"
+                                    filters.append(text(ftext))
+                                else:
+                                    raise BadRequestException('Invalid backend for Date processing')
+                        else: # values[1] == 'YEAR'
+                            pass
+                    elif "|" in value:
                         values = value.split("|")
                         filters.append(getattr(self.__model__, key).in_(values))
                     else:
