@@ -233,7 +233,7 @@ class Service(MethodView):
                 elif key == 'limit':
                     limit = int(value)
                 elif hasattr(self.__model__, key):
-                    if value.startsWith("DATE"):
+                    if value.startswith("DATE"):
                         values = value.split(",")
                         if values[1] != "YEAR":
                             if len(values) > 2:
