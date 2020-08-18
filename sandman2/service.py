@@ -211,6 +211,7 @@ class Service(MethodView):
 
         :rtype: :class:`sandman2.model.Model`
         """
+        db.engine.echo = True
         backend = ""
         if 'sqlite' in db.engine.name:
             backend = 'sqlite'
@@ -269,6 +270,7 @@ class Service(MethodView):
         else:
             queryset = queryset.limit(limit)
             resources = queryset.all()
+        db.engine.echo = False
         return [r.to_dict() for r in resources]
 
     def _export(self, collection):
