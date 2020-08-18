@@ -208,6 +208,7 @@ class Service(MethodView):
     def prepareDate(self, key, value, backend, filters):
         """Set Date Filter
         """
+        key = f"`{key}`"
         values = value.split(",")
         if len(values) > 2:
             if backend == 'sqlite':
@@ -231,6 +232,7 @@ class Service(MethodView):
     def prepareYear(self, key, value, backend, filters):
         """Set year Filter
         """
+        key = f"`{key}`"
         values = value.split(",")
         if len(values) > 2:
             if backend == 'sqlite':
