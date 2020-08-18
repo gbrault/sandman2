@@ -238,19 +238,19 @@ class Service(MethodView):
                         if values[1] != "YEAR":
                             if len(values) > 2:
                                 if backend == 'sqlite':
-                                    ftext = f"date(key) between date({values[1]}) and date({values[2]})"
+                                    ftext = f"date({key}) between date({values[1]}) and date({values[2]})"
                                     filters.append(text(ftext))
                                 elif backend == 'mysql':
-                                    ftext = f"date(key) between date({values[1]}) and date({values[2]})"
+                                    ftext = f"date({key}) between date({values[1]}) and date({values[2]})"
                                     filters.append(text(ftext))
                                 else:
                                     raise BadRequestException('Invalid backend for Date processing')
                             else:
                                 if backend == 'sqlite':
-                                    ftext = f"date(key) = date({values[1]})"
+                                    ftext = f"date({key}) = date({values[1]})"
                                     filters.append(text(ftext))
                                 elif backend == 'mysql':
-                                    ftext = f"date(key) = date({values[1]})"
+                                    ftext = f"date({key}) = date({values[1]})"
                                     filters.append(text(ftext))
                                 else:
                                     raise BadRequestException('Invalid backend for Date processing')
