@@ -234,7 +234,7 @@ class Service(MethodView):
         values = value.split(",")
         if len(values) > 2:
             if backend == 'sqlite':
-                ftext = f"strftime('%Y',{key}) between '{values[1]}' and '{values[2]}'"
+                ftext = f"cast(strftime('%Y',{key}) AS INTEGER)  between {values[1]} and {values[2]}"
                 filters.append(text(ftext))
             elif backend == 'mysql':
                 ftext = f"year(date({key})) between {values[1]} and {values[2]}"
@@ -243,7 +243,7 @@ class Service(MethodView):
                 raise BadRequestException('Invalid backend for Year processing')
         else:
             if backend == 'sqlite':
-                ftext = f"strftime('%Y',{key}) = '{values[1]}'"
+                ftext = f"cast(strftime('%Y',{key}) AS INTEGER) = {values[1]}"
                 filters.append(text(ftext))
             elif backend == 'mysql':
                 ftext = f"year(date({key})) = {values[1]})"
