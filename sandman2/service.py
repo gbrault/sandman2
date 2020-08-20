@@ -284,7 +284,7 @@ class Service(MethodView):
             backend = 'mysql'
         queryset = self.__model__.query
         args = {k: v for (k, v) in request.args.items() 
-                if (k not in ('page', 'export', 'collection') 
+                if (k not in ('page', 'export', 'collection','split')
                     and not k.isnumeric())}
         limit = None
         if args:
