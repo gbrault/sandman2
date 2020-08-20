@@ -8,7 +8,8 @@ from flask import request, make_response
 import flask
 from flask.views import MethodView
 from sqlalchemy import asc, desc
-from sqlalchemy.sql import func, text
+from sqlalchemy.sql import text
+from datetime import datetime
 
 # Application imports
 from sandman2.exception import NotFoundException, BadRequestException
@@ -99,11 +100,27 @@ class Service(MethodView):
             if error_message:
                 raise BadRequestException(error_message)
 
-            if 'export' in request.args: 
+            if 'export' in request.args:
                 return self._export(self._all_resources())
 
             if 'collection' in request.args:
-                return flask.jsonify(self._all_resources())            
+                if 'split' in request.args:
+                    # column seen as a date and split into three more fields: year, month, day
+                    results = self._all_resources()
+                    splits = request.args['split'].split(',')
+                    scolumn = splits[0]
+                    sformat = splits[1]
+                    tr_results = []
+                    for result in results:
+                        sdate = str(result[scolumn])
+                        date = datetime.strptime(sdate, sformat)
+                        result[scolumn+"_year"] = date.year
+                        result[scolumn+"_month"] = date.month
+                        result[scolumn+"_day"] = date.day
+                        tr_results.append(result)
+                    return flask.jsonify(tr_results)
+                else:
+                    return flask.jsonify(self._all_resources())
 
             return flask.jsonify({
                 self.__json_collection_name__: self._all_resources()
@@ -204,7 +221,7 @@ class Service(MethodView):
         if not resource:
             raise NotFoundException()
         return resource
-    
+
     def prepareDate(self, key, value, backend, filters):
         """Set Date Filter
         """
@@ -300,7 +317,7 @@ class Service(MethodView):
                     raise BadRequestException('Invalid field [{}]'.format(key))
             queryset = queryset.filter(*filters).order_by(*order)
         if 'page' in request.args:
-            resources = queryset.paginate(page=int(request.args['page']), 
+            resources = queryset.paginate(page=int(request.args['page']),
                                           per_page=limit).items
         else:
             queryset = queryset.limit(limit)
