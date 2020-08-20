@@ -248,7 +248,7 @@ class Service(MethodView):
                 ftext = f"cast(strftime('%Y',{key}) AS INTEGER) = {values[1]}"
                 filters.append(text(ftext))
             elif backend == 'mysql':
-                ftext = f"year(date({key})) = {values[1]})"
+                ftext = f"year(date({key})) = {values[1]}"
                 filters.append(text(ftext))
             else:
                 raise BadRequestException('Invalid backend for Year processing')
